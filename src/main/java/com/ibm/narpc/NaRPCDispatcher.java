@@ -58,8 +58,7 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 			incomingChannels.add(endpoint);
 			selector.wakeup();
 	}
-
-	@Override
+	
 	public void run() {
 		try {
 			while (true) {

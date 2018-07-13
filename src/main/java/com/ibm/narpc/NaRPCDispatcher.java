@@ -58,7 +58,7 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 			incomingChannels.add(endpoint);
 			selector.wakeup();
 	}
-	
+
 	public void run() {
 		try {
 			while (true) {
@@ -77,10 +77,8 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 							try {
 								ticket = channel.fetch(request);
 							} catch (IOException e) {
-								LOG.info("closing channel " + channel.address() + " due to " + e.getMessage());
-								key.cancel();
-								channel.close();
-								continue;
+								LOG.info(e.getMessage());
+								ticket = -1;
 							}
 							if(ticket > 0){
 								T response = service.processRequest(request);

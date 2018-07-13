@@ -31,32 +31,32 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
 
 public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> implements Runnable {
-    static private Logger LOG = NaRPCUtils.getLogger();
-    
-    private NaRPCGroup group;
-    private LinkedBlockingQueue<NaRPCServerChannel> incomingChannels;
-    private NaRPCService<R,T> service;
-    private Selector selector;
-    private R request;
-    private int id;
-    
-    public NaRPCDispatcher() {
-    	
-    }
+		static private Logger LOG = NaRPCUtils.getLogger();
 
-    public NaRPCDispatcher(NaRPCGroup group, NaRPCService<R,T> service, int id) throws IOException {
-    	this.group = group;
-        this.service = service;
-        this.id = id;
-        this.selector = Selector.open();
-        this.incomingChannels = new LinkedBlockingQueue<NaRPCServerChannel>();
-        this.request = service.createRequest();
-    }
+		private NaRPCGroup group;
+		private LinkedBlockingQueue<NaRPCServerChannel> incomingChannels;
+		private NaRPCService<R,T> service;
+		private Selector selector;
+		private R request;
+		private int id;
 
-    public void addChannel(NaRPCServerChannel endpoint) throws IOException {
+		public NaRPCDispatcher() {
+
+		}
+
+		public NaRPCDispatcher(NaRPCGroup group, NaRPCService<R,T> service, int id) throws IOException {
+			this.group = group;
+				this.service = service;
+				this.id = id;
+				this.selector = Selector.open();
+				this.incomingChannels = new LinkedBlockingQueue<NaRPCServerChannel>();
+				this.request = service.createRequest();
+		}
+
+		public void addChannel(NaRPCServerChannel endpoint) throws IOException {
 //    	LOG.info("adding connection " + endpoint.address() + " to dispatcher with id " + id);
-    	incomingChannels.add(endpoint);
-    	selector.wakeup();
+			incomingChannels.add(endpoint);
+			selector.wakeup();
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 							long ticket = channel.fetch(request);
 							if(ticket > 0){
 								T response = service.processRequest(request);
-								channel.transmit(ticket, response);	
+								channel.transmit(ticket, response);
 							} else if (ticket < 0){
 								LOG.info("closing channel " + channel.address());
 								key.cancel();
@@ -85,7 +85,7 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 							} else {
 								throw new Exception("ticket number invalid");
 							}
-						} 
+						}
 						keyIterator.remove();
 					}
 				}
@@ -95,7 +95,7 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void processIncomingChannels() throws IOException{
 		NaRPCServerChannel channel = incomingChannels.poll();
 		while(channel != null){
@@ -106,6 +106,6 @@ public class NaRPCDispatcher<R extends NaRPCMessage, T extends NaRPCMessage> imp
 			socket.register(selector, SelectionKey.OP_READ, channel);
 			LOG.info("adding new channel to selector, from " + socket.getRemoteAddress());
 			channel = incomingChannels.poll();
-		}		
+		}
 	}
 }
